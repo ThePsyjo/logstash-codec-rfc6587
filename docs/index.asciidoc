@@ -14,7 +14,7 @@ END - GENERATED VARIABLES, DO NOT EDIT!
 
 [id="plugins-{type}s-{plugin}"]
 
-=== Line codec plugin
+=== Rfc6587 codec plugin
 
 include::{include_path}/plugin_header.asciidoc[]
 
@@ -33,7 +33,7 @@ This plugin is compatible with the {ecs-ref}[Elastic Common Schema (ECS)].
 No additional configuration is required. 
 
 [id="plugins-{type}s-{plugin}-options"]
-==== Line codec configuration options
+==== Rfc6587 codec configuration options
 
 [cols="<,<,<",options="header",]
 |=======================================================================
