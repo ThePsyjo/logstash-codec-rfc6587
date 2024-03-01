@@ -49,6 +49,7 @@ describe LogStash::Codecs::Rfc6587, :ecs_compatibility_support do
   #end
 
   context "#decode" do
+
     it "should return an event from an ascii string" do
       decoded = false
       subject.decode("11 hello world") do |e|
@@ -58,6 +59,33 @@ describe LogStash::Codecs::Rfc6587, :ecs_compatibility_support do
       end
       insist { decoded } == true
     end
+
+    it "should return nothing if input data is empty" do
+      decoded = false
+      subject.decode("") do |e|
+        decoded = true
+      end
+      insist { decoded } == false
+    end
+
+    it "should return nothing if input data is only '\\0' or '\\x00'" do
+      decoded = false
+      subject.decode("\0\x00") do |e|
+        decoded = true
+      end
+      insist { decoded } == false
+    end
+
+    it "should return an event from an ascii string prefixed with \\0" do
+      decoded = false
+      subject.decode("\x004 test") do |e|
+        decoded = true
+        insist { e.is_a?(LogStash::Event) }
+        insist { e.get("message") } == "test"
+      end
+      insist { decoded } == true
+    end
+
 
     ecs_compatibility_matrix(:disabled, :v1, :v8 => :v1) do |ecs_select|
 

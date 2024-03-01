@@ -49,6 +49,7 @@ class LogStash::Codecs::Rfc6587 < LogStash::Codecs::Base
   def read(data)
     header = ""
     while c = data.read(1)
+      next if ["\0", "\x00"].include?(c)  # ignore null characters
       raise "Unknown header character '#{c}'" if not [@delimiter, nil, c.to_i.to_s].include?(c)
       header += c if c
       break if c == @delimiter or data.eof or c == nil
