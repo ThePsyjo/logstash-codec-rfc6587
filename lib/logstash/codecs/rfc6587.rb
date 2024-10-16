@@ -62,7 +62,10 @@ class LogStash::Codecs::Rfc6587 < LogStash::Codecs::Base
 
     to_read = header.to_i
     line = ""
-    to_read.times { line += data.getc }
+    to_read.times do
+      break if (c = data.getc) == nil
+      line += c
+    end
 
     if not line
       @leftover = header

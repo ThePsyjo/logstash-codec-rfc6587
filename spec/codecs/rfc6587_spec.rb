@@ -96,6 +96,17 @@ describe LogStash::Codecs::Rfc6587, :ecs_compatibility_support do
       expect(result[2].get("message")).to eq("line3")
     end
 
+    it "should parse partial batches" do
+      result = []
+      subject.decode("5 line15 line")  { |e| result << e }
+      subject.decode("25 line3") { |e| result << e }
+      subject.flush { |e| result << e }
+      expect(result.size).to eq(3)
+      expect(result[0].get("message")).to eq("line1")
+      expect(result[1].get("message")).to eq("line2")
+      expect(result[2].get("message")).to eq("line3")
+    end
+
     ecs_compatibility_matrix(:disabled, :v1, :v8 => :v1) do |ecs_select|
 
       before(:each) do
