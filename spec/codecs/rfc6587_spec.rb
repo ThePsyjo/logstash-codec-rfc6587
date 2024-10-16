@@ -86,6 +86,15 @@ describe LogStash::Codecs::Rfc6587, :ecs_compatibility_support do
       insist { decoded } == true
     end
 
+    it "should contain correct results when input contains newline" do
+      result = []
+      subject.decode("5 line17 line2\n!5 line3") { |e| result << e }
+      subject.flush { |e| result << e }
+      expect(result.size).to eq(3)
+      expect(result[0].get("message")).to eq("line1")
+      expect(result[1].get("message")).to eq("line2\n!")
+      expect(result[2].get("message")).to eq("line3")
+    end
 
     ecs_compatibility_matrix(:disabled, :v1, :v8 => :v1) do |ecs_select|
 
@@ -137,6 +146,7 @@ describe LogStash::Codecs::Rfc6587, :ecs_compatibility_support do
         expect(result[1].get("message")).to eq("line2")
         expect(result[2].get("message")).to eq("line3")
       end
+
     end
   end
 
