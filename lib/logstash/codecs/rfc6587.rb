@@ -35,6 +35,7 @@ class LogStash::Codecs::Rfc6587 < LogStash::Codecs::Base
   def initialize(*params)
     super
 
+    raise "Delimitter must be 1 character long, but got '#{@delimiter}'" if @delimiter.length != 1
     @original_field = ecs_select[disabled: nil, v1: '[event][original]']
   end
 
@@ -48,7 +49,7 @@ class LogStash::Codecs::Rfc6587 < LogStash::Codecs::Base
 
   def read(data)
     header = ""
-    while c = data.read(1)
+    while (c = data.getc)
       next if ["\0", "\x00"].include?(c)  # ignore null characters
       raise "Unknown header character '#{c}'" if not [@delimiter, nil, c.to_i.to_s].include?(c)
       header += c if c
@@ -82,7 +83,7 @@ class LogStash::Codecs::Rfc6587 < LogStash::Codecs::Base
 
   def decode(data)
     data = StringIO.new @leftover + data
-    while line = read(data)
+    while (line = read(data))
       yield new_event_from_line(line)
     end
   end
