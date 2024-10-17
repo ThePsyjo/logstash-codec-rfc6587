@@ -1,4 +1,5 @@
 # encoding: utf-8
+
 require "logstash/codecs/base"
 require "logstash/util/charset"
 
@@ -11,14 +12,13 @@ require 'logstash/plugin_mixins/event_support/event_factory_adapter'
 #
 # Encoding behavior: TBD
 class LogStash::Codecs::Rfc6587 < LogStash::Codecs::Base
-
   include LogStash::PluginMixins::ECSCompatibilitySupport(:disabled, :v1, :v8 => :v1)
   include LogStash::PluginMixins::EventSupport::EventFactoryAdapter
 
   config_name "rfc6587"
 
   ## Set the desired text format for encoding.
-  #config :format, :validate => :string
+  # config :format, :validate => :string
 
   # The character encoding used in this input. Examples include `UTF-8`
   # and `cp1252`
@@ -36,6 +36,7 @@ class LogStash::Codecs::Rfc6587 < LogStash::Codecs::Base
     super
 
     raise "Delimitter must be 1 character long, but got '#{@delimiter}'" if @delimiter.length != 1
+
     @original_field = ecs_select[disabled: nil, v1: '[event][original]']
   end
 
@@ -50,12 +51,14 @@ class LogStash::Codecs::Rfc6587 < LogStash::Codecs::Base
   def read(data)
     header = ""
     while (c = data.getc)
-      next if ["\0", "\x00"].include?(c)  # ignore null characters
+      next if ["\0", "\x00"].include?(c) # ignore null characters
       raise "Unknown header character '#{c}'" if not [@delimiter, nil, c.to_i.to_s].include?(c)
+
       header += c if c
       break if c == @delimiter or data.eof or c == nil
     end
     raise "Unknown header '#{header}'" if header != "" and header.to_i == 0
+
     if data.eof
       @leftover = header
       return
@@ -65,6 +68,7 @@ class LogStash::Codecs::Rfc6587 < LogStash::Codecs::Base
     line = ""
     to_read.times do
       break if (c = data.getc) == nil
+
       line += c
     end
 
@@ -89,16 +93,16 @@ class LogStash::Codecs::Rfc6587 < LogStash::Codecs::Base
   end
 
   def flush(&block)
-    #remainder = @buffer.flush
-    #if !remainder.empty?
+    # remainder = @buffer.flush
+    # if !remainder.empty?
     #  block.call new_event_from_line(remainder)
-    #end
+    # end
   end
 
   def encode(event)
     raise "Not implemented"
-    #encoded = @format ? event.sprintf(@format) : event.to_s
-    #@on_event.call(event, encoded + @delimiter)
+    # encoded = @format ? event.sprintf(@format) : event.to_s
+    # @on_event.call(event, encoded + @delimiter)
   end
 
   private
@@ -109,5 +113,4 @@ class LogStash::Codecs::Rfc6587 < LogStash::Codecs::Base
     event.set @original_field, message.dup.freeze if @original_field
     event
   end
-
 end
